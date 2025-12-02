@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NoteCast</title>
+</head>
+<body>
+  <h1>Sube un audio/video o pega URL de YouTube</h1>
+
+  <h2>Archivo local</h2>
+  <input type="file" id="fileInput">
+  <button onclick="uploadFile()">Procesar archivo</button>
+
+  <h2>URL de YouTube</h2>
+  <input type="text" id="youtubeUrl" placeholder="Pega URL aquí">
+  <button onclick="processYoutube()">Procesar YouTube</button>
+
+  <h2>Resultado:</h2>
+  <pre id="result"></pre>
+
+  <script>
+    async function uploadFile() {
+      const file = document.getElementById("fileInput").files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const resp = await fetch("http://127.0.0.1:8000/upload", { method: "POST", body: formData });
+      const data = await resp.json();
+      document.getElementById("result").textContent =
+        "Resumen:\n" + data.summary + "\n\nTareas:\n" + data.tasks.join("\n");
+    }
+
+    async function processYoutube() {
+      const url = document.getElementById("youtubeUrl").value;
+      const formData = new FormData();
+      formData.append("url", url);
+
+      const resp = await fetch("http://127.0.0.1:8000/youtube", { method: "POST", body: formData });
+      const data = await resp.json();
+      document.getElementById("result").textContent =
+        "Resumen:\n" + data.summary + "\n\nTareas:\n" + data.tasks.join("\n");
+    }
+  </script>
+</body>
+</html>
