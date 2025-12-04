@@ -1,9 +1,19 @@
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from transcriber import transcribe_audio, extract_audio, download_youtube_audio
 from summarizer import summarize_text, extract_tasks
 import os
 
 app = FastAPI()
+
+# Configurar CORS para permitir peticiones desde el frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción, especifica el dominio exacto
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Asegúrate de que las carpetas existen
 os.makedirs("audios", exist_ok=True)
