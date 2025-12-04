@@ -5,40 +5,86 @@
   <title>NoteCast</title>
 </head>
 <body>
-  <h1>Sube un audio/video o pega URL de YouTube</h1>
+  <h1>Upload audio/video or paste YouTube URL</h1>
 
-  <h2>Archivo local</h2>
+  <h2>Local File</h2>
   <input type="file" id="fileInput">
-  <button onclick="uploadFile()">Procesar archivo</button>
+  <button onclick="uploadFile()">Process File</button>
 
-  <h2>URL de YouTube</h2>
-  <input type="text" id="youtubeUrl" placeholder="Pega URL aquí">
-  <button onclick="processYoutube()">Procesar YouTube</button>
+  <h2>YouTube URL</h2>
+  <input type="text" id="youtubeUrl" placeholder="Paste URL here">
+  <button onclick="processYoutube()">Process YouTube</button>
 
-  <h2>Resultado:</h2>
+  <h2>Result:</h2>
   <pre id="result"></pre>
 
   <script>
     async function uploadFile() {
       const file = document.getElementById("fileInput").files[0];
-      const formData = new FormData();
-      formData.append("file", file);
+      if (!file) {
+        alert("Please select a file");
+        return;
+      }
+      
+      document.getElementById("result").textContent = "Processing...";
+      
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const resp = await fetch("http://127.0.0.1:8000/upload", { method: "POST", body: formData });
-      const data = await resp.json();
-      document.getElementById("result").textContent =
-        "Resumen:\n" + data.summary + "\n\nTareas:\n" + data.tasks.join("\n");
+        const resp = await fetch("http://127.0.0.1:8000/upload", { method: "POST", body: formData });
+        const data = await resp.json();
+        
+        console.log("Server Response:", data);
+        
+        let resultText = "=== SUMMARY ===\n" + (data.summary || "Could not generate summary") + "\n\n";
+        resultText += "=== TASKS ===\n";
+        
+        if (data.tasks && data.tasks.length > 0) {
+          resultText += data.tasks.join("\n");
+        } else {
+          resultText += "No specific tasks found in the content.";
+        }
+        
+        document.getElementById("result").textContent = resultText;
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("result").textContent = "Error: " + error.message;
+      }
     }
 
     async function processYoutube() {
       const url = document.getElementById("youtubeUrl").value;
-      const formData = new FormData();
-      formData.append("url", url);
+      if (!url) {
+        alert("Please enter a URL");
+        return;
+      }
+      
+      document.getElementById("result").textContent = "Downloading and processing... (this may take several minutes)";
+      
+      try {
+        const formData = new FormData();
+        formData.append("url", url);
 
-      const resp = await fetch("http://127.0.0.1:8000/youtube", { method: "POST", body: formData });
-      const data = await resp.json();
-      document.getElementById("result").textContent =
-        "Resumen:\n" + data.summary + "\n\nTareas:\n" + data.tasks.join("\n");
+        const resp = await fetch("http://127.0.0.1:8000/youtube", { method: "POST", body: formData });
+        const data = await resp.json();
+        
+        console.log("Server response:", data);
+        
+        let resultText = "=== SUMMARY ===\n" + (data.summary || "Could not generate summary") + "\n\n";
+        resultText += "=== TASKS ===\n";
+        
+        if (data.tasks && data.tasks.length > 0) {
+          resultText += data.tasks.join("\n");
+        } else {
+          resultText += "No specific tasks found in the content.";
+        }
+        
+        document.getElementById("result").textContent = resultText;
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("result").textContent = "Error: " + error.message;
+      }
     }
   </script>
 </body>
